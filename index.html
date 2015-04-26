@@ -1,0 +1,75 @@
+<html>
+<head><title>NodeChat</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('http://192.168.0.4');
+
+  socket.on('message', function (message, callback) {
+    console.log(message);
+
+    var html = null;
+
+    if (message.type == 'info') {
+    	html = '<span class="NCInfoMsg">' + message.text + '</span>';
+    }
+    else if (message.type == 'whisper') {
+    	html = '<span class="NCWhisper">' + message.user + ': ' + message.text + ' + </span>';
+    }
+    else {
+    	html = '<span class="NCNick">' + message.user + '</span>: ';
+    	html += message.text;
+    }
+
+    var cont = document.getElementById('NCChatContainer');
+    cont.innerHTML += '\r\n' + html;
+
+    // Scroll to bottom
+    cont.scrollTop = cont.scrollHeight;
+  });
+
+  function NCSendMsg() {
+  	socket.emit('message', {text: document.getElementById('NCInput').value})
+  	document.getElementById('NCInput').value = '';
+  }
+
+  function checkEnter() {
+  	if (event.keyCode == '13') {
+  		document.getElementById('NCSend').click();
+  	}
+  }
+
+</script>
+<style type="text/css">
+	#NCChatContainer {
+		font-family: monospace;
+		white-space: pre;
+		height: 40em;
+		overflow: scroll;
+	}
+
+	#NCInput {
+		margin: 2em;
+		width: 50em;
+		font-family: monospace;
+	}
+
+	.NCInfoMsg {
+		color: blue;
+	}
+
+	.NCNick {
+		color: green;
+	}
+
+	.NCWhisper {
+		color: pink;
+	}
+</style>
+<body onload="document.getElementById('NCInput').focus()">
+	<div id="NCChatContainer"></div>
+	<div id="NCInputContainer">
+		<input id="NCInput" type="text" onkeypress="checkEnter()" />
+		<input id="NCSend" type="button" value="Send" onclick="NCSendMsg()" />
+	</div>
+</body>
+</html>
